@@ -434,8 +434,7 @@ class ClaimGraph(gl.Contract):
             raise gl.vm.UserError("EXPECTED: claims must belong to the same graph")
 
     def _require_claim_pair(self, graph_id: u256, a: u256, b: u256) -> None:
-        graph = self._graph(graph_id)
-        self._require_graph_active(graph)
+        self._graph(graph_id)
         self._require_claim_in_graph(self._claim(a), graph_id)
         self._require_claim_in_graph(self._claim(b), graph_id)
 

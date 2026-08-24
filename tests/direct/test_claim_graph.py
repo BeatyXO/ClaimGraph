@@ -199,6 +199,20 @@ def test_deactivated_graph_blocks_new_claims(direct_deploy, direct_vm, direct_al
         contract.register_claim(1, "new claim", "")
 
 
+def test_deactivated_graph_preserves_historical_queries_but_fails_consumption(direct_deploy, direct_vm, direct_alice):
+    contract = deploy(direct_deploy, direct_vm)
+    create_graph(contract, direct_vm, direct_alice)
+    a, b = register_pair(contract, direct_vm, direct_alice)
+    proposal = contract.open_relation(1, a, b)
+    mock_relation(direct_vm, "EQUIVALENT")
+    contract.resolve_relation(proposal)
+    contract.deactivate_graph(1)
+    assert contract.relation_between(1, a, b) == "EQUIVALENT"
+    assert contract.has_resolved_relation(1, a, b) is True
+    assert contract.is_relation_usable(1, a, b) is False
+    assert contract.can_coexist(1, a, b) is False
+
+
 def test_stats_track_resolved_edges(direct_deploy, direct_vm, direct_alice):
     contract = deploy(direct_deploy, direct_vm)
     create_graph(contract, direct_vm, direct_alice)
