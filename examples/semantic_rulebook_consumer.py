@@ -31,7 +31,7 @@ class SemanticRulebookConsumer(gl.Contract):
 
     @gl.public.write
     def adopt_compatible_claim(self, candidate_claim: u256) -> None:
-        graph = gl.get_contract_at(self.claim_graph, IClaimGraph)
+        graph = IClaimGraph(self.claim_graph).view()
         if not graph.can_coexist(self.graph_id, self.protected_claim, candidate_claim):
             raise gl.vm.UserError("EXPECTED: candidate has no resolved compatible relation")
         self.adopted_claim = candidate_claim
