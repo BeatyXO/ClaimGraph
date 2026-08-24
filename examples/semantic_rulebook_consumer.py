@@ -5,14 +5,14 @@ from genlayer import *
 @gl.contract_interface
 class IClaimGraph:
     class View:
-        pass
-
-    class Write:
         def can_coexist(self, graph_id: u256, claim_x: u256, claim_y: u256) -> bool:
             pass
 
         def relation_between(self, graph_id: u256, claim_x: u256, claim_y: u256) -> str:
             pass
+
+    class Write:
+        pass
 
 
 class SemanticRulebookConsumer(gl.Contract):
