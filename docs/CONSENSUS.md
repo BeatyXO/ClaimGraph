@@ -30,6 +30,8 @@ Malformed output is normalized to `INCONCLUSIVE`.
 
 Consumers therefore fail closed: `can_coexist` returns `False` for `NONE` and `INCONCLUSIVE`.
 
+The relation enum is the only consensus-critical output. Reasons are bounded audit text and are never used as a policy input. `A_ENTAILS_B` means necessary implication, not probability; `CONTRADICTS` requires simultaneous incompatibility rather than mere difference; `EQUIVALENT` excludes broader, narrower, conditional, and time-shifted claims; dependency is reserved for material presupposition without simple entailment. The prompt frames claim fields as untrusted data so embedded instructions are not treated as validator instructions.
+
 ## Pair canonicalization
 
 Claims are immutable. Each graph stores at most one proposal lifecycle for a canonical unordered pair `(min_id, max_id)`.

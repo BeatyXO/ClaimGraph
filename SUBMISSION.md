@@ -11,4 +11,4 @@ Consensus is required because entailment, contradiction, equivalence, and depend
 
 This is not a thin LLM wrapper: claims and graph policy persist on-chain, consensus is load-bearing, and downstream contracts consume stable relation and compatibility views. Malformed or disputed reasoning remains `INCONCLUSIVE` and is not consumable.
 
-Validation evidence: Direct Mode 16/16 passed at the audited starting commit. A Studionet deployment and live runtime proof remain to be supplied before claiming final submission readiness.
+Validation evidence: Direct Mode results and linter/preflight results must be regenerated after each source change. This working revision has not been deployed to Studionet, so no live runtime proof or source-parity claim is made here.

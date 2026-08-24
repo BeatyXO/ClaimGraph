@@ -108,6 +108,34 @@ def test_contradiction_becomes_persistent_blocking_edge(direct_deploy, direct_vm
     assert json.loads(contract.proposal_of(proposal))["status"] == "RESOLVED"
 
 
+def test_withdrawal_invalidates_current_usability_but_preserves_history(direct_deploy, direct_vm, direct_alice):
+    contract = deploy(direct_deploy, direct_vm)
+    create_graph(contract, direct_vm, direct_alice)
+    a, b = register_pair(contract, direct_vm, direct_alice)
+    proposal = contract.open_relation(1, a, b)
+    mock_relation(direct_vm, "EQUIVALENT")
+    contract.resolve_relation(proposal)
+    assert contract.has_resolved_relation(1, a, b) is True
+    assert contract.is_relation_usable(1, a, b) is True
+    assert contract.can_coexist(1, a, b) is True
+    contract.withdraw_claim(b)
+    assert contract.relation_between(1, a, b) == "EQUIVALENT"
+    assert contract.has_resolved_relation(1, a, b) is True
+    assert contract.is_relation_usable(1, a, b) is False
+    assert contract.can_coexist(1, a, b) is False
+
+
+def test_deployer_has_no_global_graph_privilege(direct_deploy, direct_vm, direct_alice, direct_bob):
+    contract = deploy(direct_deploy, direct_vm)
+    create_graph(contract, direct_vm, direct_bob)
+    direct_vm.sender = direct_alice
+    with direct_vm.expect_revert("EXPECTED"):
+        contract.deactivate_graph(1)
+    direct_vm.sender = direct_alice
+    with direct_vm.expect_revert("EXPECTED"):
+        contract.withdraw_claim(1)
+
+
 def test_directional_relation_is_inverted_for_reverse_query(direct_deploy, direct_vm, direct_alice):
     contract = deploy(direct_deploy, direct_vm)
     create_graph(contract, direct_vm, direct_alice)
@@ -182,3 +210,19 @@ def test_stats_track_resolved_edges(direct_deploy, direct_vm, direct_alice):
     assert stats["total_graphs"] == "1"
     assert stats["total_claims"] == "2"
     assert stats["total_edges"] == "1"
+
+
+@pytest.mark.parametrize("relation", [
+    "A_ENTAILS_B", "B_ENTAILS_A", "CONTRADICTS", "EQUIVALENT",
+    "A_DEPENDS_ON_B", "B_DEPENDS_ON_A", "INDEPENDENT",
+])
+def test_every_terminal_relation_is_persisted_and_bounded(direct_deploy, direct_vm, direct_alice, relation):
+    contract = deploy(direct_deploy, direct_vm)
+    create_graph(contract, direct_vm, direct_alice)
+    a, b = register_pair(contract, direct_vm, direct_alice)
+    proposal = contract.open_relation(1, a, b)
+    mock_relation(direct_vm, relation)
+    contract.resolve_relation(proposal)
+    assert contract.relation_between(1, a, b) == relation
+    assert contract.has_resolved_relation(1, a, b) is True
+    assert contract.is_relation_usable(1, a, b) is True

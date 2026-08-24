@@ -11,7 +11,7 @@ ClaimGraph protects the integrity of semantic relationship records and the downs
 
 ## Safety properties
 
-State writes, pair canonicalisation, access control, bounds, replay protection, and compatibility gates are deterministic. A pair is written once, terminal relations cannot be replayed, and inconclusive results never make `can_coexist()` true. Callback failure does not undo the accepted edge or create a privileged bypass.
+State writes, pair canonicalisation, access control, bounds, replay protection, and compatibility gates are deterministic. A pair is written once, terminal relations cannot be replayed, and inconclusive or withdrawn results never make `can_coexist()` true. Semantic callbacks request `finalized` delivery; callback failure does not undo the accepted edge or create a privileged bypass. There is no contract-level deployer super-admin.
 
 Claim text and model output are bounded. The contract does not execute URLs or treat model prose as a settlement instruction. Consumers must use the stable enum/boolean views and must fail closed on `NONE` or `INCONCLUSIVE`.
 

@@ -57,7 +57,6 @@ class IClaimGraphConsumer:
 
 
 class ClaimGraph(gl.Contract):
-    owner: Address
     next_graph_id: u256
     next_claim_id: u256
     next_proposal_id: u256
@@ -67,7 +66,6 @@ class ClaimGraph(gl.Contract):
     records: TreeMap[str, str]
 
     def __init__(self) -> None:
-        self.owner = gl.message.sender_address
         self.next_graph_id = u256(1)
         self.next_claim_id = u256(1)
         self.next_proposal_id = u256(1)
@@ -300,8 +298,8 @@ class ClaimGraph(gl.Contract):
         claim = self._claim(claim_id)
         graph = self._graph(u256(int(claim["graph_id"])))
         sender = self._addr(gl.message.sender_address)
-        if sender != Address(claim["author"]) and sender != Address(graph["creator"]) and sender != self.owner:
-            raise gl.vm.UserError("EXPECTED: only author, graph creator, or owner")
+        if sender != Address(claim["author"]) and sender != Address(graph["creator"]):
+            raise gl.vm.UserError("EXPECTED: only author or graph creator")
         if claim["status"] != CLAIM_ACTIVE:
             raise gl.vm.UserError("EXPECTED: claim already withdrawn")
         claim["status"] = CLAIM_WITHDRAWN
@@ -311,8 +309,8 @@ class ClaimGraph(gl.Contract):
     def deactivate_graph(self, graph_id: u256) -> None:
         graph = self._graph(graph_id)
         sender = self._addr(gl.message.sender_address)
-        if sender != Address(graph["creator"]) and sender != self.owner:
-            raise gl.vm.UserError("EXPECTED: only graph creator or owner")
+        if sender != Address(graph["creator"]):
+            raise gl.vm.UserError("EXPECTED: only graph creator")
         if graph["status"] != GRAPH_ACTIVE:
             raise gl.vm.UserError("EXPECTED: graph already inactive")
         graph["status"] = GRAPH_INACTIVE
@@ -348,11 +346,26 @@ class ClaimGraph(gl.Contract):
         return relation in TERMINAL_RELATIONS
 
     @gl.public.view
+    def is_relation_usable(self, graph_id: u256, claim_x: u256, claim_y: u256) -> bool:
+        """Return whether a resolved relation is currently safe to consume."""
+        a, b = self._canonical_pair(claim_x, claim_y)
+        graph = self._graph(graph_id)
+        self._require_claim_in_graph(self._claim(a), graph_id)
+        self._require_claim_in_graph(self._claim(b), graph_id)
+        if graph["status"] != GRAPH_ACTIVE:
+            return False
+        if self._claim(a)["status"] != CLAIM_ACTIVE or self._claim(b)["status"] != CLAIM_ACTIVE:
+            return False
+        return self.relation_between(graph_id, claim_x, claim_y) in TERMINAL_RELATIONS
+
+    @gl.public.view
     def conflicts(self, graph_id: u256, claim_x: u256, claim_y: u256) -> bool:
         return self.relation_between(graph_id, claim_x, claim_y) == REL_CONTRADICTS
 
     @gl.public.view
     def can_coexist(self, graph_id: u256, claim_x: u256, claim_y: u256) -> bool:
+        if not self.is_relation_usable(graph_id, claim_x, claim_y):
+            return False
         relation = self.relation_between(graph_id, claim_x, claim_y)
         return relation in (
             REL_A_ENTAILS_B,
@@ -400,7 +413,7 @@ class ClaimGraph(gl.Contract):
             return
         try:
             consumer = gl.get_contract_at(Address(callback), IClaimGraphConsumer)
-            consumer.on_claim_relation(graph_id, a, b, relation, on="accepted")
+            consumer.on_claim_relation(graph_id, a, b, relation, on="finalized")
             proposal["callback_sent"] = True
         except Exception:
             proposal["callback_sent"] = False
@@ -409,7 +422,7 @@ class ClaimGraph(gl.Contract):
         if bool(graph["permissionless"]):
             return
         sender = self._addr(gl.message.sender_address)
-        if sender != Address(graph["creator"]) and sender != self.owner:
+        if sender != Address(graph["creator"]):
             raise gl.vm.UserError("EXPECTED: graph is creator-managed")
 
     def _require_graph_active(self, graph: dict) -> None:

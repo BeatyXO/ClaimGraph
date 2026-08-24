@@ -13,11 +13,13 @@ if not graph.can_coexist(graph_id, protected_claim, candidate_claim):
     raise gl.vm.UserError("candidate has no resolved compatible relation")
 ```
 
-`can_coexist` returns `False` for:
+`is_relation_usable` is the lifecycle-aware view. It returns `False` when the graph is inactive, either claim is withdrawn, or the pair is unresolved. `can_coexist` calls it first and therefore returns `False` for:
 
 - `NONE`
 - `INCONCLUSIVE`
 - `CONTRADICTS`
+
+`has_resolved_relation` and `relation_between` preserve historical graph truth after withdrawal. Consumers must use `is_relation_usable` or `can_coexist` for current decisions. `conflicts` remains historical: a withdrawn contradictory pair is still recorded as conflicting, while it is not currently usable.
 
 and `True` for resolved non-conflicting semantic relations.
 
@@ -45,6 +47,6 @@ Callback failure does not revert the semantic decision. The proposal records whe
 A graph can be:
 
 - `permissionless=True`: anyone may register claims and open relation proposals.
-- `permissionless=False`: only the graph creator or ClaimGraph owner may do so.
+- `permissionless=False`: only the graph creator may do so. There is no deployer super-admin.
 
 This lets the same primitive serve public registries and controlled rulebooks.

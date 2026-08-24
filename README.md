@@ -67,6 +67,8 @@ Downstream contracts can call:
 - `conflicts(graph_id, claim_x, claim_y)`
 - `can_coexist(graph_id, claim_x, claim_y)`
 
+`is_relation_usable(graph_id, claim_x, claim_y)` is the lifecycle-aware consumer view. `relation_between()` and `has_resolved_relation()` preserve historical graph truth for auditability, while `is_relation_usable()` and `can_coexist()` fail closed when the graph is inactive or either claim is withdrawn. Relation callbacks request finalized delivery; callback failure does not corrupt the stored edge.
+
 `can_coexist` is fail-closed: unresolved and inconclusive pairs return `False`.
 
 See `examples/semantic_rulebook_consumer.py` for a minimal importer that refuses to adopt a candidate rule unless ClaimGraph has a resolved non-conflicting relation against a protected claim.
@@ -154,6 +156,8 @@ The direct test suite covers:
 - consumer-safe unknown-pair behavior
 - graph deactivation
 - edge/stat accounting
+- withdrawal invalidation while preserving historical relation data
+- deployer isolation and every terminal relation enum
 
 Run with the GenLayer direct test tooling used by Studio/`gltest`:
 
