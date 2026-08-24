@@ -167,9 +167,9 @@ pytest tests/direct -q
 
 ## Deployment
 
-Canonical StudioNet deployment: `0xFcE7CE9a24AfAC0De711679eb897cc35B45a7e7d`.
+Canonical StudioNet deployment: `0xe0E09098A859734A9b75a337FF91376B69EEa3eD`.
 
-Deployment transaction: `0xa009a2d6b0f74d64a2e58c2d709d5505e9e31f2307017b0f2c8cc8984ab96c57` (`ACCEPTED`, `MAJORITY_AGREE`). The source commit was `8c984a48af1d79f534c5beb1b887313716f367b8`. Live proof includes an `EQUIVALENT` resolution and post-withdrawal `can_coexist == false`; see `docs/DEPLOYMENT.md` for all hashes.
+Deployment transaction: `0x57e2bf4a773f82da7ed790f821e39f0accf099fb96e99f5cfc4be66bd621c9f4` (`ACCEPTED`, `MAJORITY_AGREE`). The source commit was `1b720e1b0fb8f8a02dbd19a50642a5497f02b660`. Live proof includes `EQUIVALENT`, `CONTRADICTS`, consumer adoption/rejection, and post-withdrawal `can_coexist == false`; see `docs/DEPLOYMENT.md` for all hashes.
 
 Deploy `contracts/claim_graph.py` to GenLayer Studio/StudioNet. The constructor takes no arguments.
 

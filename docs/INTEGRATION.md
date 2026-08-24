@@ -6,6 +6,8 @@ ClaimGraph is designed to be imported by other Intelligent Contracts.
 
 A downstream contract should never treat an unresolved pair as compatible.
 
+The repository integration suite runs the official `genlayer` CLI against StudioNet when explicitly configured with `CLAIMGRAPH_STUDIONET_LIVE=1` and `CLAIMGRAPH_LIVE_CONTRACT`. It performs real RPC reads and never mocks LLM output.
+
 Use:
 
 ```python

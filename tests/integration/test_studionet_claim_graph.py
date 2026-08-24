@@ -1,6 +1,7 @@
 """Real StudioNet smoke tests driven by the official GenLayer CLI."""
 import json
 import os
+import shutil
 import subprocess
 
 import pytest
@@ -13,12 +14,20 @@ SKIP_REASON = "set CLAIMGRAPH_STUDIONET_LIVE=1 and CLAIMGRAPH_LIVE_CONTRACT to r
 
 
 def cli(*args: str) -> str:
-    result = subprocess.run(["genlayer", *args], check=True, capture_output=True, text=True)
+    executable = shutil.which("genlayer") or shutil.which("genlayer.ps1")
+    if executable and executable.lower().endswith(".ps1"):
+        command = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", executable, *args]
+    else:
+        command = [executable or "genlayer", *args]
+    result = subprocess.run(command, check=True, capture_output=True, text=True)
     return result.stdout
 
 
 def read_result(method: str, *args: str):
-    output = cli("call", CONTRACT, method, "--args", *args)
+    call_args = ("call", CONTRACT, method)
+    if args:
+        call_args += ("--args", *args)
+    output = cli(*call_args)
     marker = "Result:\n"
     assert marker in output, output
     value = output.split(marker, 1)[1].split("\n", 1)[0].strip()
